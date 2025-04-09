@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
+from transformers import AutoTokenizer
+from transformers import DistilBertTokenizer
 
 emotions = load_dataset("emotion")
 print(emotions)
@@ -61,3 +63,29 @@ one_hot_encodings.shape
 print(f"토큰: {tokenized_txt[0]}")
 print(f"인덱스: {input_ids[0]}")
 print(f"원-핫 인코딩: {one_hot_encodings[0]}")
+
+tokenized_txt = text.split()
+print(tokenized_txt)
+
+model_ckpt = "distilbert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
+
+text = "Tokenizing text is a core task of NLP"
+encoded_txt = tokenizer(text)
+print(encoded_txt)
+
+tokens = tokenizer.convert_ids_to_tokens(encoded_txt.input_ids)
+print(tokens)
+print(tokenizer.convert_tokens_to_string(tokens))
+tokenizer.vocab_size
+tokenizer.model_max_length
+tokenizer.model_input_names
+
+def tokenize(batch):
+  return tokenizer(batch["text"], padding=True, truncation=True)
+
+emotions = load_dataset("emotion")
+print(tokenize(emotions["train"][:2]))
+
+emotions_encoded = emotions.map(tokenize, batched=True, batch_size=None)
+print(emotions_encoded["train"].column_names)
